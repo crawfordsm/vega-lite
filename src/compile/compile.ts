@@ -4,6 +4,7 @@
 import {Model} from './Model';
 
 import {compileAxis} from './axis';
+import {compileSignals} from './signals';
 import {compileData} from './data';
 import {facetMixins} from './facet';
 import {compileLegends} from './legend';
@@ -37,6 +38,7 @@ export function compile(spec) {
     config.background ? { background: config.background } : {},
     keys(config.scene).length > 0 ? scene(config) : {},
     {
+      signals: compileSignals(model),
       data: compileData(model),
       marks: [compileRootGroup(model)]
     });

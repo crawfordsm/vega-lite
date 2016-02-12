@@ -15,12 +15,14 @@ import * as vlEncoding from '../encoding';
 import {Mark, BAR, TICK, TEXT as TEXTMARK} from '../mark';
 
 import {getFullName, NOMINAL, ORDINAL, TEMPORAL, QUANTITATIVE} from '../type';
-import {contains, duplicate, extend} from '../util';
+import {contains, duplicate, extend, keys, vals, isString} from '../util';
 
 import {compileMarkConfig} from './config';
 import {compileLayout, Layout} from './layout';
 import {compileStackProperties, StackProperties} from './stack';
 import {type as scaleType} from './scale';
+
+import {Selection, parseSelections} from '../parse/selections';
 
 /**
  * Internal model of Vega-Lite specification for the compiler.
@@ -29,10 +31,12 @@ export class Model {
   private _spec: Spec;
   private _stack: StackProperties;
   private _layout: Layout;
+  private _selections: any;
 
   constructor(spec: Spec) {
     var defaults = schema.instantiate();
     this._spec = schemaUtil.mergeDeep(defaults, spec);
+    this._selections = [];
 
     vlEncoding.forEach(this._spec.encoding, function(fieldDef: FieldDef, channel: Channel) {
       if (!supportMark(channel, this._spec.mark)) {
@@ -90,6 +94,7 @@ export class Model {
     this._spec.config.mark = compileMarkConfig(this._spec, this._stack);
     this._layout = compileLayout(this);
 
+    parseSelections(this);
   }
 
   public layout(): Layout {
@@ -138,13 +143,14 @@ export class Model {
     return vlEncoding.has(this._spec.encoding, channel);
   }
 
-  public fieldDef(channel: Channel): FieldDef {
-    return this._spec.encoding[channel];
+  public fieldDef(channel: Channel, rule: Boolean = false): FieldDef {
+    var def = this._spec.encoding[channel];
+    // TODO: HACK FOR NOW, just assume if it's a rule the first branch is the ruleDef.
+    return def.rule && !rule ? extend({}, vals(def.rule[0])[0], def) : def;
   }
 
   /** Get "field" reference for vega */
-  public field(channel: Channel, opt: FieldRefOption = {}) {
-    const fieldDef = this.fieldDef(channel);
+  public field(channel: Channel, opt: FieldRefOption = {}, fieldDef = this.fieldDef(channel)) {
     if (fieldDef.bin) { // bin has default suffix that depends on scaleType
       opt = extend({
         binSuffix: scaleType(fieldDef, channel, this.mark()) === 'ordinal' ? '_range' : '_start'
@@ -275,5 +281,12 @@ export class Model {
         return bandWidth / 1.5;
     }
     return this.config().mark.size;
+  }
+
+  public selection(name:string = undefined, def:Selection = undefined) {
+    var len = arguments.length;
+    return (!len) ? this._selections :
+      (len === 1) ? this._spec.select[name] :
+      (this._selections.push(def), def);
   }
 }

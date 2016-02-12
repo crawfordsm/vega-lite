@@ -5,6 +5,7 @@ import {field} from '../fielddef';
 import {QUANTITATIVE, ORDINAL, TEMPORAL} from '../type';
 import {format as timeFormatExpr} from './time';
 import {contains} from '../util';
+import {compileProductionRule} from './rule';
 
 export enum ColorMode {
   ALWAYS_FILLED,
@@ -24,30 +25,21 @@ export function applyColorAndOpacity(p, model: Model, colorMode: ColorMode = Col
         colorMode === ColorMode.FILLED_BY_DEFAULT ? true :
           false; // ColorMode.STROKED_BY_DEFAULT
 
-  const fieldDef = model.fieldDef(COLOR);
-  if (filled) {
-    if (model.has(COLOR)) {
-      p.fill = {
+  const property = filled ? 'fill' : 'stroke';
+  compileProductionRule(model, COLOR, p, function(fieldDef) {
+    var prop = {};
+    if (fieldDef.field) {
+      prop[property] = {
         scale: model.scaleName(COLOR),
-        field: model.field(COLOR, fieldDef.type === ORDINAL ? {prefn: 'rank_'} : {})
-      };
+        field: model.field(COLOR, fieldDef.type === ORDINAL ? { prefn: 'rank_' } : {}, fieldDef)
+      }
     } else if (fieldDef.value) {
-      p.fill = { value: fieldDef.value };
+      prop[property] = { value: fieldDef.value };
     } else {
-      p.fill = { value: model.config().mark.color };
+      prop[property] = { value: model.config().mark.color };
     }
-  } else {
-    if (model.has(COLOR)) {
-      p.stroke = {
-        scale: model.scaleName(COLOR),
-        field: model.field(COLOR, fieldDef.type === ORDINAL ? {prefn: 'rank_'} : {})
-      };
-    } else if (fieldDef.value) {
-      p.stroke = { value: fieldDef.value };
-    } else {
-      p.stroke = { value: model.config().mark.color };
-    }
-  }
+    return prop;
+  });
 
   // Apply fill and stroke config later
   // `fill` and `stroke` config can override `color` config

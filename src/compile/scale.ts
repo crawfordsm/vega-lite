@@ -3,7 +3,7 @@ declare var exports;
 
 import {FieldDef} from '../schema/fielddef.schema';
 
-import {contains, extend} from '../util';
+import {contains, extend, vals} from '../util';
 import {Model} from './Model';
 import {SHARED_DOMAIN_OPS} from '../aggregate';
 import {COLUMN, ROW, X, Y, SHAPE, SIZE, COLOR, TEXT, hasScale, Channel} from '../channel';
@@ -25,7 +25,7 @@ export const COLOR_LEGEND_LABEL = 'color_legend_label';
 export function compileScales(channels: Channel[], model: Model) {
   return channels.filter(hasScale)
     .reduce(function(scales: any[], channel: Channel) {
-      const fieldDef = model.fieldDef(channel);
+      var fieldDef = model.fieldDef(channel);
 
       var scaleDef: any = {
         name: model.scaleName(channel),

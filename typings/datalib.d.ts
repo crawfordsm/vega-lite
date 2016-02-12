@@ -2,11 +2,14 @@ declare module "datalib/src/util" {
   export function keys(a): Array<string>;
   export function extend(a, b, ...rest);
   export function duplicate(a);
+  export function array(a);
   export function isArray(a): boolean;
   export function vals(a);
   export function truncate(a: string, length: number): string;
   export function toMap(a);
   export function isObject(a): boolean;
+  export function isString(a): boolean;
+  export function isNumber(a): boolean;
 }
 
 declare module "datalib/src/generate" {

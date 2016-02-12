@@ -12,6 +12,8 @@ import {QUANTITATIVE, TEMPORAL, ORDINAL} from '../type';
 import {type as scaleType} from './scale';
 import {parseExpression, rawDomain} from './time';
 
+import {Selection} from '../parse/selections';
+
 const DEFAULT_NULL_FILTERS = {
   nominal: false,
   ordinal: false,
@@ -52,7 +54,8 @@ export function compileData(model: Model): VgData[] {
   }
 
   return def.concat(
-    dates.defs(model) // Time domain tables
+    dates.defs(model), // Time domain tables
+    selections.defs(model)
   );
 }
 
@@ -459,6 +462,23 @@ export namespace dates {
       }
       return aggregator;
     }, []);
+  }
+}
+
+export namespace selections {
+  export function defs(model: Model) {
+    var data = [];
+    model.selection().forEach(function(sel:Selection) {
+      if (!sel.collect) return;
+      data.push({
+        name: sel.collect.db,
+        modify: [
+          {type: 'clear',  test: '!'+sel.collect.name},
+          {type: 'toggle', signal: sel.name}
+        ]
+      })
+    });
+    return data;
   }
 }
 

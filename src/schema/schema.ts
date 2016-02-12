@@ -14,6 +14,7 @@ export interface Spec {
   data?: Data;
   transform?: Transform;
   mark?: Mark;
+  select?: any;
   encoding?: Encoding;
   config?: Config;
 }

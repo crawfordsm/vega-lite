@@ -21,7 +21,7 @@ export function channels(encoding: Encoding) {
 export function has(encoding: Encoding, channel: Channel): boolean {
   const channelEncoding = encoding && encoding[channel];
   return channelEncoding && (
-    channelEncoding.field !== undefined ||
+    channelEncoding.field !== undefined || channelEncoding.rule !== undefined ||
     (isArray(channelEncoding) && channelEncoding.length > 0)
   );
 }
