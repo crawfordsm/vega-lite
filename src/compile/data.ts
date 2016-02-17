@@ -12,7 +12,7 @@ import {QUANTITATIVE, TEMPORAL, ORDINAL} from '../type';
 import {type as scaleType} from './scale';
 import {parseExpression, rawDomain} from './time';
 
-import {Selection} from '../parse/selections';
+import {Stores, Selection, storeName} from '../parse/selections';
 
 const DEFAULT_NULL_FILTERS = {
   nominal: false,
@@ -467,16 +467,20 @@ export namespace dates {
 
 export namespace selections {
   export function defs(model: Model) {
-    var data = [];
+    var data = [], m;
     model.selection().forEach(function(sel:Selection) {
-      if (!sel.collect) return;
+      if (sel.store !== Stores.POINTS) return;
       data.push({
-        name: sel.collect.db,
-        modify: [
-          {type: 'clear',  test: '!'+sel.collect.name},
+        name: storeName(sel),
+        modify: (m=[])
+      });
+
+      if (sel.toggle) {
+        m.push.apply(m, [
+          {type: 'clear',  test: '!'+sel.toggle.name},
           {type: 'toggle', signal: sel.name}
-        ]
-      })
+        ]);
+      }
     });
     return data;
   }

@@ -1,4 +1,5 @@
 import * as u from '../util';
+import {Selection} from '../parse/selections';
 
 export function compileProductionRule(model, channel, output, cb) {
   const ruleDef = model.fieldDef(channel, true),
@@ -7,21 +8,14 @@ export function compileProductionRule(model, channel, output, cb) {
   // RuleDef is just a regular FieldDef.
   if (!rules || rules.length === 0) return u.extend(output, cb(ruleDef));
 
-  rules.forEach(function(rule) {
-    const ks = u.keys(rule);
-    var selName, selection, fieldDef;
-
-    if (ks.length === 1 && !rule.value) {
-      selection = model.selection(selName=ks[0]);
-      fieldDef  = rule[selName];
-    } else {
-      fieldDef = rule;
-    }
+  rules.forEach(function(fieldDef) {
+    var selName = fieldDef.selection,
+        sel:Selection = selName && model.selection(selName);
 
     const property = cb(fieldDef);
     u.keys(property).forEach(function(k) {
       const o = u.isArray(output[k]) && output[k] || (output[k] = []);
-      if (selName) property[k].test = selection.query;
+      if (selName) property[k].test = sel.predicate;
       o.push(property[k]);
     });
   });

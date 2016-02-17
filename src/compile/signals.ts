@@ -13,19 +13,16 @@ export function compileSignals(model: Model): VgSignal[] {
   var signals:VgSignal[] = [];
 
   model.selection().forEach(function(sel:Selection) {
-    if (sel.type === SelectionTypes.DATUM) {
-      compileDatumSignal(sel, signals);
-    }
+    // Every selection will have a trigger.
+    compileTrigger(sel, signals);
 
-    if (sel.collect) {
-      compileCollectSignal(sel, signals);
-    }
+    if (sel.toggle) compileToggle(sel, signals);
   });
 
   return signals;
 }
 
-function compileDatumSignal(sel:Selection, signals:VgSignal[]) {
+function compileTrigger(sel:Selection, signals:VgSignal[]) {
   var expr = sel.project.map(function(p) {
     return p.field ? '_'+p.field + ': datum.' + p.field : '';
   }).join(', ');
@@ -41,15 +38,15 @@ function compileDatumSignal(sel:Selection, signals:VgSignal[]) {
   });
 }
 
-function compileCollectSignal(sel:Selection, signals:VgSignal[]) {
+function compileToggle(sel:Selection, signals:VgSignal[]) {
   signals.push({
-    name: sel.collect.name,
+    name: sel.toggle.name,
     verbose: true,
     init: false,
     streams: [
       // The first stream mimics sel.on to unset collection.
       {type: sel.on, expr: 'false'},
-      {type: sel.collect.on, expr: 'true'}
+      {type: sel.toggle.on, expr: 'true'}
     ]
   });
 }
