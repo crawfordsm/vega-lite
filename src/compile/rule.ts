@@ -1,5 +1,5 @@
 import * as u from '../util';
-import {Selection} from '../parse/selections';
+import {Selection} from './selections';
 
 export function compileProductionRule(model, channel, output, cb) {
   const ruleDef = model.fieldDef(channel, true),

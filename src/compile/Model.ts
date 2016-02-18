@@ -22,7 +22,7 @@ import {compileLayout, Layout} from './layout';
 import {compileStackProperties, StackProperties} from './stack';
 import {type as scaleType} from './scale';
 
-import {Selection, parseSelections} from '../parse/selections';
+import * as selections from './selections';
 
 /**
  * Internal model of Vega-Lite specification for the compiler.
@@ -94,7 +94,7 @@ export class Model {
     this._spec.config.mark = compileMarkConfig(this._spec, this._stack);
     this._layout = compileLayout(this);
 
-    parseSelections(this);
+    selections.parse(this);
   }
 
   public layout(): Layout {
@@ -283,7 +283,7 @@ export class Model {
     return this.config().mark.size;
   }
 
-  public selection(name:string = undefined, def:Selection = undefined) {
+  public selection(name:string = undefined, def:selections.Selection = undefined) {
     var len = arguments.length;
     return (!len) ? this._selections :
       (len === 1) ? this._spec.select[name] :

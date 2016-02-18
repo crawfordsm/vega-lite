@@ -12,7 +12,7 @@ import {QUANTITATIVE, TEMPORAL, ORDINAL} from '../type';
 import {type as scaleType} from './scale';
 import {parseExpression, rawDomain} from './time';
 
-import {Stores, Selection, storeName} from '../parse/selections';
+import {compileData as selections} from './selections';
 
 const DEFAULT_NULL_FILTERS = {
   nominal: false,
@@ -55,7 +55,7 @@ export function compileData(model: Model): VgData[] {
 
   return def.concat(
     dates.defs(model), // Time domain tables
-    selections.defs(model)
+    selections(model)
   );
 }
 
@@ -462,27 +462,6 @@ export namespace dates {
       }
       return aggregator;
     }, []);
-  }
-}
-
-export namespace selections {
-  export function defs(model: Model) {
-    var data = [], m;
-    model.selection().forEach(function(sel:Selection) {
-      if (sel.store !== Stores.POINTS) return;
-      data.push({
-        name: storeName(sel),
-        modify: (m=[])
-      });
-
-      if (sel.toggle) {
-        m.push.apply(m, [
-          {type: 'clear',  test: '!'+sel.toggle.name},
-          {type: 'toggle', signal: sel.name}
-        ]);
-      }
-    });
-    return data;
   }
 }
 
