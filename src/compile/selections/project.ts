@@ -19,7 +19,7 @@ export function parse(sel:s.Selection) {
   }
 }
 
-export function compileTrigger(sel:s.Selection, trigger) {
+export function compileSignals(sel:s.Selection, trigger) {
   trigger.streams[0].expr = '{'+sel.project.map(function(p) {
     return p.field ? '_'+p.field + ': datum.' + p.field : '';
   }).join(', ')+'}';

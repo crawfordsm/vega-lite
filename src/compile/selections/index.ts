@@ -78,9 +78,8 @@ export function compileSignals(model: Model) {
     };
 
     transforms.forEach(function(k) {
-      if (tx[k].compileTrigger) tx[k].compileTrigger(sel, trigger);
-      if (tx[k].compileClear)   tx[k].compileClear(sel, clear);
-      if (tx[k].compileSignals) tx[k].compileSignals(sel, signals);
+      if (!tx[k].compileSignals) return;
+      tx[k].compileSignals(sel, trigger, clear, signals);
     });
 
     // We only need the clear signal if we're using a points store.
@@ -97,7 +96,7 @@ export function compileData(model: Model) {
   var data = [];
   model.selection().forEach(function(sel:Selection) {
     if (sel.store !== Stores.POINTS) return;
-    var d = {
+    var db = {
       name: storeName(sel),
       transform: [],
       modify: [
@@ -105,13 +104,12 @@ export function compileData(model: Model) {
       ]
     };
 
-    // TODO: Will transforms ever need to add additional datasources?
     transforms.forEach(function(k) {
       if (!tx[k].compileData) return;
-      tx[k].compileData(sel, d);
+      tx[k].compileData(sel, db, data);
     });
 
-    data.push(d);
+    data.unshift(db);
   });
   return data;
 }
