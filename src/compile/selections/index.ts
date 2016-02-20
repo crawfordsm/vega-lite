@@ -24,10 +24,11 @@ export interface Selection {
   // Transforms
   project?: any;
   toggle?: any;
-  interval?: any;
+  domain?: any;
+  translate?: any;
 }
 
-export function storeName(sel:Selection) {
+export function storeName(sel: Selection) {
   return sel.name + (sel.store === Stores.POINTS ? '_db' : '');
 }
 
@@ -40,7 +41,7 @@ export function parse(model: Model) {
     sel.name = k;
     sel.on = sel.on || 'click';
 
-    if (sel.store === Stores.POINTS && !sel.interval && !sel.toggle) {
+    if (sel.store === Stores.POINTS && sel.toggle === undefined && !sel.toggle && !sel.domain) {
       sel.toggle = true;
     }
 
@@ -50,8 +51,8 @@ export function parse(model: Model) {
 
     // Parse transformations.
     transforms.forEach(function(k) {
-      if (!tx[k].parse) return;
-      tx[k].parse(sel);
+      if (!tx[k].parse || !sel[k]) return;
+      tx[k].parse(model, sel);
     });
 
     model.selection(k, sel);
@@ -60,7 +61,7 @@ export function parse(model: Model) {
 
 export function compileSignals(model: Model) {
   var signals = [];
-  model.selection().forEach(function(sel:Selection) {
+  model.selection().forEach(function(sel: Selection) {
     var trigger = {
       name: sel.name,
       verbose: true,  // TODO: how do we do better than this?
@@ -78,23 +79,24 @@ export function compileSignals(model: Model) {
     };
 
     transforms.forEach(function(k) {
-      if (!tx[k].compileSignals) return;
-      tx[k].compileSignals(sel, trigger, clear, signals);
+      if (!tx[k].compileSignals || !sel[k]) return;
+      tx[k].compileSignals(model, sel, trigger, clear, signals);
     });
 
     // We only need the clear signal if we're using a points store.
-    if (sel.store === Stores.POINTS) {
+    // Transforms can clear out signal names to not have them added.
+    if (sel.store === Stores.POINTS && clear.name) {
       signals.unshift(clear);
     }
 
-    signals.unshift(trigger);
+    if (trigger.name) signals.unshift(trigger);
   });
   return signals;
 }
 
 export function compileData(model: Model) {
   var data = [];
-  model.selection().forEach(function(sel:Selection) {
+  model.selection().forEach(function(sel: Selection) {
     if (sel.store !== Stores.POINTS) return;
     var db = {
       name: storeName(sel),
@@ -105,8 +107,8 @@ export function compileData(model: Model) {
     };
 
     transforms.forEach(function(k) {
-      if (!tx[k].compileData) return;
-      tx[k].compileData(sel, db, data);
+      if (!tx[k].compileData || !sel[k]) return;
+      tx[k].compileData(model, sel, db, data);
     });
 
     data.unshift(db);

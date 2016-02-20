@@ -61,6 +61,7 @@
     "uglify-js": "^2.6.1",
     "vega": "^2.4.2",
     "vega-datasets": "vega/vega-datasets#gh-pages",
+    "vega-event-selector": "^1.0.0",
     "watchify": "^3.7.0",
     "z-schema": "^3.16.1"
   },

@@ -1,6 +1,6 @@
 /// <reference path="../typings/datalib.d.ts"/>
 
-export {keys, extend, duplicate, isArray, vals, truncate, toMap, isObject, isString, isNumber, array} from 'datalib/src/util';
+export {keys, extend, duplicate, isArray, vals, truncate, toMap, isObject, isString, isNumber, array, str} from 'datalib/src/util';
 export {range} from 'datalib/src/generate';
 
 export function contains<T>(array: Array<T>, item: T) {
